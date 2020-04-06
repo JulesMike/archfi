@@ -710,7 +710,7 @@ formatdevice(){
 
 mountparts(){
 	clear
-	if [ ! "${bootdev}" = "" ]; then
+	if [ ! "${usingBtrfs}" = "" ]; then
 		echo "mount btrfs subvol @root"
 		mountOpts="noatime,compress=lzo,space_cache"
 		mount -o ${mountOpts},subvol=/@root ${rootdev} /mnt
