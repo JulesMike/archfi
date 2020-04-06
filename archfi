@@ -598,8 +598,8 @@ formatdevice(){
 			if [ "${1}" = "root" ]; then
 				echo "mount ${2} /mnt"
 				mount ${2} /mnt
-				echo "btrfs subvolume create /mnt/@root"
-				btrfs subvolume create /mnt/@root
+				echo "btrfs subvolume create /mnt/@"
+				btrfs subvolume create /mnt/@
 				echo "btrfs subvolume create /mnt/@home"
 				btrfs subvolume create /mnt/@home
 				echo "btrfs subvolume create /mnt/@var"
@@ -711,9 +711,9 @@ formatdevice(){
 mountparts(){
 	clear
 	if [ ! "${usingBtrfs}" = "" ]; then
-		echo "mount btrfs subvol @root"
+		echo "mount btrfs subvol @"
 		mountOpts="noatime,compress=lzo,space_cache"
-		mount -o ${mountOpts},subvol=/@root ${rootdev} /mnt
+		mount -o ${mountOpts},subvol=/@ ${rootdev} /mnt
 		echo "mkdir /mnt/{home,var,.snapshots} 2>/dev/null"
 		mkdir /mnt/{home,var,.snapshots} 2>/dev/null
 		echo "mount btrfs subvols @home,@var,@snapshots"
