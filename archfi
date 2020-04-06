@@ -597,13 +597,18 @@ formatdevice(){
 			mkfs.btrfs -f ${2}
 			if [ "${1}" = "root" ]; then
 				echo "mount ${2} /mnt"
-				echo "btrfs subvolume create /mnt/root"
-				echo "btrfs subvolume set-default /mnt/root"
-				echo "umount /mnt"
 				mount ${2} /mnt
-				btrfs subvolume create /mnt/root
-				btrfs subvolume set-default /mnt/root
-				umount /mnt
+				echo "btrfs subvolume create /mnt/@root"
+				btrfs subvolume create /mnt/@root
+				echo "btrfs subvolume create /mnt/@home"
+				btrfs subvolume create /mnt/@home
+				echo "btrfs subvolume create /mnt/@var"
+				btrfs subvolume create /mnt/@var
+				echo "btrfs subvolume create /mnt/@snapshots"
+				btrfs subvolume create /mnt/@snapshots
+				echo "umount /mnt"
+				umount -R /mnt
+				usingBtrfs="true"
 			fi
 		;;
 		ext4)
@@ -705,11 +710,25 @@ formatdevice(){
 
 mountparts(){
 	clear
-	echo "mount ${rootdev} /mnt"
-	mount ${rootdev} /mnt
-	echo "mkdir /mnt/{boot,home}"
-	mkdir /mnt/{boot,home} 2>/dev/null
 	if [ ! "${bootdev}" = "" ]; then
+		echo "mount btrfs subvol @root"
+		mountOpts="noatime,compress=lzo,space_cache"
+		mount -o ${mountOpts},subvol=/@root ${rootdev} /mnt
+		echo "mkdir /mnt/{home,var,.snapshots} 2>/dev/null"
+		mkdir /mnt/{home,var,.snapshots} 2>/dev/null
+		echo "mount btrfs subvols @home,@var,@snapshots"
+		mount -o ${mountOpts},subvol=/@home ${rootdev} /mnt/home
+		mount -o ${mountOpts},subvol=/@var ${rootdev} /mnt/var
+		mount -o ${mountOpts},subvol=/@snapshots ${rootdev} /mnt/.snapshots
+	else
+		echo "mount ${rootdev} /mnt"
+		mount ${rootdev} /mnt
+		echo "mkdir /mnt/home"
+		mkdir /mnt/home 2>/dev/null
+	fi
+	if [ ! "${bootdev}" = "" ]; then
+		echo "mkdir /mnt/boot"
+		mkdir /mnt/boot 2>/dev/null
 		echo "mount ${bootdev} /mnt/boot"
 		mount ${bootdev} /mnt/boot
 	fi
