@@ -600,6 +600,7 @@ formatdevice(){
 				mount ${2} /mnt
 				echo "btrfs subvolume create /mnt/@"
 				btrfs subvolume create /mnt/@
+				btrfs subvolume set-default /mnt/@
 				echo "btrfs subvolume create /mnt/@home"
 				btrfs subvolume create /mnt/@home
 				echo "btrfs subvolume create /mnt/@var"
