@@ -601,8 +601,10 @@ formatdevice(){
 				echo "btrfs subvolume create /mnt/@"
 				btrfs subvolume create /mnt/@
 				btrfs subvolume set-default /mnt/@
-				echo "btrfs subvolume create /mnt/@home"
-				btrfs subvolume create /mnt/@home
+				if [ "${homedev}" = "" ]; then
+					echo "btrfs subvolume create /mnt/@home"
+					btrfs subvolume create /mnt/@home
+				fi
 				echo "btrfs subvolume create /mnt/@var"
 				btrfs subvolume create /mnt/@var
 				echo "btrfs subvolume create /mnt/@snapshots"
@@ -715,17 +717,20 @@ mountparts(){
 		echo "mount btrfs subvol @"
 		mountOpts="noatime,compress=lzo,space_cache"
 		mount -o ${mountOpts},subvol=/@ ${rootdev} /mnt
-		echo "mkdir /mnt/{home,var,.snapshots} 2>/dev/null"
-		mkdir /mnt/{home,var,.snapshots} 2>/dev/null
-		echo "mount btrfs subvols @home,@var,@snapshots"
-		mount -o ${mountOpts},subvol=/@home ${rootdev} /mnt/home
+		if [ "${homedev}" = "" ]; then
+			echo "mkdir /mnt/home"
+			mkdir /mnt/home 2>/dev/null
+			echo "mount btrfs subvol @home"
+			mount -o nodatacow,${mountOpts},subvol=/@home ${rootdev} /mnt/home
+		fi
+		echo "mkdir /mnt/{var,.snapshots}"
+		mkdir /mnt/{var,.snapshots} 2>/dev/null
+		echo "mount btrfs subvols @var,@snapshots"
 		mount -o ${mountOpts},subvol=/@var ${rootdev} /mnt/var
 		mount -o ${mountOpts},subvol=/@snapshots ${rootdev} /mnt/.snapshots
 	else
 		echo "mount ${rootdev} /mnt"
 		mount ${rootdev} /mnt
-		echo "mkdir /mnt/home"
-		mkdir /mnt/home 2>/dev/null
 	fi
 	if [ ! "${bootdev}" = "" ]; then
 		echo "mkdir /mnt/boot"
@@ -738,6 +743,8 @@ mountparts(){
 		swapon ${swapdev}
 	fi
 	if [ ! "${homedev}" = "" ]; then
+		echo "mkdir /mnt/home"
+		mkdir /mnt/home 2>/dev/null
 		echo "mount ${homedev} /mnt/home"
 		mount ${homedev} /mnt/home
 	fi
